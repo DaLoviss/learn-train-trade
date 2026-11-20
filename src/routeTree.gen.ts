@@ -10,33 +10,170 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as FreeEducationRouteImport } from './routes/free-education'
+import { Route as MyChannelRouteImport } from './routes/my-channel'
+import { Route as ResourcesRouteImport } from './routes/resources'
+import { Route as FreeEducationIndexRouteImport } from './routes/free-education.index'
+import { Route as FreeEducationLearningToTradeRouteImport } from './routes/free-education.learning-to-trade'
+import { Route as FreeEducationWhatIsForexRouteImport } from './routes/free-education.what-is-forex'
+import { Route as FreeEducationWhyTradeRouteImport } from './routes/free-education.why-trade'
+import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
+import { Route as ResourcesNewsRouteImport } from './routes/resources.news'
+import { Route as ResourcesPropFirmsRouteImport } from './routes/resources.prop-firms'
+import { Route as ResourcesTradingToolsRouteImport } from './routes/resources.trading-tools'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FreeEducationRoute = FreeEducationRouteImport.update({
+  id: '/free-education',
+  path: '/free-education',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MyChannelRoute = MyChannelRouteImport.update({
+  id: '/my-channel',
+  path: '/my-channel',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ResourcesRoute = ResourcesRouteImport.update({
+  id: '/resources',
+  path: '/resources',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FreeEducationIndexRoute = FreeEducationIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => FreeEducationRoute,
+} as any)
+const FreeEducationLearningToTradeRoute =
+  FreeEducationLearningToTradeRouteImport.update({
+    id: '/learning-to-trade',
+    path: '/learning-to-trade',
+    getParentRoute: () => FreeEducationRoute,
+  } as any)
+const FreeEducationWhatIsForexRoute =
+  FreeEducationWhatIsForexRouteImport.update({
+    id: '/what-is-forex',
+    path: '/what-is-forex',
+    getParentRoute: () => FreeEducationRoute,
+  } as any)
+const FreeEducationWhyTradeRoute = FreeEducationWhyTradeRouteImport.update({
+  id: '/why-trade',
+  path: '/why-trade',
+  getParentRoute: () => FreeEducationRoute,
+} as any)
+const ResourcesIndexRoute = ResourcesIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => ResourcesRoute,
+} as any)
+const ResourcesNewsRoute = ResourcesNewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => ResourcesRoute,
+} as any)
+const ResourcesPropFirmsRoute = ResourcesPropFirmsRouteImport.update({
+  id: '/prop-firms',
+  path: '/prop-firms',
+  getParentRoute: () => ResourcesRoute,
+} as any)
+const ResourcesTradingToolsRoute = ResourcesTradingToolsRouteImport.update({
+  id: '/trading-tools',
+  path: '/trading-tools',
+  getParentRoute: () => ResourcesRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/free-education': typeof FreeEducationRouteWithChildren
+  '/my-channel': typeof MyChannelRoute
+  '/resources': typeof ResourcesRouteWithChildren
+  '/free-education/learning-to-trade': typeof FreeEducationLearningToTradeRoute
+  '/free-education/what-is-forex': typeof FreeEducationWhatIsForexRoute
+  '/free-education/why-trade': typeof FreeEducationWhyTradeRoute
+  '/resources/news': typeof ResourcesNewsRoute
+  '/resources/prop-firms': typeof ResourcesPropFirmsRoute
+  '/resources/trading-tools': typeof ResourcesTradingToolsRoute
+  '/free-education/': typeof FreeEducationIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/my-channel': typeof MyChannelRoute
+  '/free-education/learning-to-trade': typeof FreeEducationLearningToTradeRoute
+  '/free-education/what-is-forex': typeof FreeEducationWhatIsForexRoute
+  '/free-education/why-trade': typeof FreeEducationWhyTradeRoute
+  '/resources/news': typeof ResourcesNewsRoute
+  '/resources/prop-firms': typeof ResourcesPropFirmsRoute
+  '/resources/trading-tools': typeof ResourcesTradingToolsRoute
+  '/free-education': typeof FreeEducationIndexRoute
+  '/resources': typeof ResourcesIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/free-education': typeof FreeEducationRouteWithChildren
+  '/my-channel': typeof MyChannelRoute
+  '/resources': typeof ResourcesRouteWithChildren
+  '/free-education/learning-to-trade': typeof FreeEducationLearningToTradeRoute
+  '/free-education/what-is-forex': typeof FreeEducationWhatIsForexRoute
+  '/free-education/why-trade': typeof FreeEducationWhyTradeRoute
+  '/resources/news': typeof ResourcesNewsRoute
+  '/resources/prop-firms': typeof ResourcesPropFirmsRoute
+  '/resources/trading-tools': typeof ResourcesTradingToolsRoute
+  '/free-education/': typeof FreeEducationIndexRoute
+  '/resources/': typeof ResourcesIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/free-education'
+    | '/my-channel'
+    | '/resources'
+    | '/free-education/learning-to-trade'
+    | '/free-education/what-is-forex'
+    | '/free-education/why-trade'
+    | '/resources/news'
+    | '/resources/prop-firms'
+    | '/resources/trading-tools'
+    | '/free-education/'
+    | '/resources/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/my-channel'
+    | '/free-education/learning-to-trade'
+    | '/free-education/what-is-forex'
+    | '/free-education/why-trade'
+    | '/resources/news'
+    | '/resources/prop-firms'
+    | '/resources/trading-tools'
+    | '/free-education'
+    | '/resources'
+  id:
+    | '__root__'
+    | '/'
+    | '/free-education'
+    | '/my-channel'
+    | '/resources'
+    | '/free-education/learning-to-trade'
+    | '/free-education/what-is-forex'
+    | '/free-education/why-trade'
+    | '/resources/news'
+    | '/resources/prop-firms'
+    | '/resources/trading-tools'
+    | '/free-education/'
+    | '/resources/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  FreeEducationRoute: typeof FreeEducationRouteWithChildren
+  MyChannelRoute: typeof MyChannelRoute
+  ResourcesRoute: typeof ResourcesRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +185,127 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/free-education': {
+      id: '/free-education'
+      path: '/free-education'
+      fullPath: '/free-education'
+      preLoaderRoute: typeof FreeEducationRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/my-channel': {
+      id: '/my-channel'
+      path: '/my-channel'
+      fullPath: '/my-channel'
+      preLoaderRoute: typeof MyChannelRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/resources': {
+      id: '/resources'
+      path: '/resources'
+      fullPath: '/resources'
+      preLoaderRoute: typeof ResourcesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/free-education/': {
+      id: '/free-education/'
+      path: '/'
+      fullPath: '/free-education/'
+      preLoaderRoute: typeof FreeEducationIndexRouteImport
+      parentRoute: typeof FreeEducationRoute
+    }
+    '/free-education/learning-to-trade': {
+      id: '/free-education/learning-to-trade'
+      path: '/learning-to-trade'
+      fullPath: '/free-education/learning-to-trade'
+      preLoaderRoute: typeof FreeEducationLearningToTradeRouteImport
+      parentRoute: typeof FreeEducationRoute
+    }
+    '/free-education/what-is-forex': {
+      id: '/free-education/what-is-forex'
+      path: '/what-is-forex'
+      fullPath: '/free-education/what-is-forex'
+      preLoaderRoute: typeof FreeEducationWhatIsForexRouteImport
+      parentRoute: typeof FreeEducationRoute
+    }
+    '/free-education/why-trade': {
+      id: '/free-education/why-trade'
+      path: '/why-trade'
+      fullPath: '/free-education/why-trade'
+      preLoaderRoute: typeof FreeEducationWhyTradeRouteImport
+      parentRoute: typeof FreeEducationRoute
+    }
+    '/resources/': {
+      id: '/resources/'
+      path: '/'
+      fullPath: '/resources/'
+      preLoaderRoute: typeof ResourcesIndexRouteImport
+      parentRoute: typeof ResourcesRoute
+    }
+    '/resources/news': {
+      id: '/resources/news'
+      path: '/news'
+      fullPath: '/resources/news'
+      preLoaderRoute: typeof ResourcesNewsRouteImport
+      parentRoute: typeof ResourcesRoute
+    }
+    '/resources/prop-firms': {
+      id: '/resources/prop-firms'
+      path: '/prop-firms'
+      fullPath: '/resources/prop-firms'
+      preLoaderRoute: typeof ResourcesPropFirmsRouteImport
+      parentRoute: typeof ResourcesRoute
+    }
+    '/resources/trading-tools': {
+      id: '/resources/trading-tools'
+      path: '/trading-tools'
+      fullPath: '/resources/trading-tools'
+      preLoaderRoute: typeof ResourcesTradingToolsRouteImport
+      parentRoute: typeof ResourcesRoute
+    }
   }
 }
 
+interface FreeEducationRouteChildren {
+  FreeEducationLearningToTradeRoute: typeof FreeEducationLearningToTradeRoute
+  FreeEducationWhatIsForexRoute: typeof FreeEducationWhatIsForexRoute
+  FreeEducationWhyTradeRoute: typeof FreeEducationWhyTradeRoute
+  FreeEducationIndexRoute: typeof FreeEducationIndexRoute
+}
+
+const FreeEducationRouteChildren: FreeEducationRouteChildren = {
+  FreeEducationLearningToTradeRoute: FreeEducationLearningToTradeRoute,
+  FreeEducationWhatIsForexRoute: FreeEducationWhatIsForexRoute,
+  FreeEducationWhyTradeRoute: FreeEducationWhyTradeRoute,
+  FreeEducationIndexRoute: FreeEducationIndexRoute,
+}
+
+const FreeEducationRouteWithChildren = FreeEducationRoute._addFileChildren(
+  FreeEducationRouteChildren,
+)
+
+interface ResourcesRouteChildren {
+  ResourcesNewsRoute: typeof ResourcesNewsRoute
+  ResourcesPropFirmsRoute: typeof ResourcesPropFirmsRoute
+  ResourcesTradingToolsRoute: typeof ResourcesTradingToolsRoute
+  ResourcesIndexRoute: typeof ResourcesIndexRoute
+}
+
+const ResourcesRouteChildren: ResourcesRouteChildren = {
+  ResourcesNewsRoute: ResourcesNewsRoute,
+  ResourcesPropFirmsRoute: ResourcesPropFirmsRoute,
+  ResourcesTradingToolsRoute: ResourcesTradingToolsRoute,
+  ResourcesIndexRoute: ResourcesIndexRoute,
+}
+
+const ResourcesRouteWithChildren = ResourcesRoute._addFileChildren(
+  ResourcesRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  FreeEducationRoute: FreeEducationRouteWithChildren,
+  MyChannelRoute: MyChannelRoute,
+  ResourcesRoute: ResourcesRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

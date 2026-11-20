@@ -1,0 +1,2 @@
+- [x] Build site pages with sample content
+- [ ] Replace sample content and channel link (waiting on owner)
