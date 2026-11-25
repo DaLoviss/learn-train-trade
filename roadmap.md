@@ -1,4 +1,6 @@
 - [x] Build site pages with sample content
 - [x] Add linked Economic Calendar tile and Investing.com calendar page (provider blocks preview access; direct link included)
 - [x] Add live embedded TradingView news and an updating FXStreet headline ticker to News
+- [x] Reorder News: FXStreet ticker, Investing.com (last 2 days), TradingView
+- [ ] Enforce TradingView last-3-days limit (provider iframe has no date filter; waiting on owner’s choice to keep it or replace it)
 - [ ] Replace sample content and channel link (waiting on owner)

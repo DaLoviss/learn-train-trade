@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { ExternalLink, Pause, Play, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { FXSTREET_FEED_URL, NEWS_REFRESH_MS, parseHeadlines, type NewsHeadline } from "@/lib/news-feed";
+import { InvestingNews } from "@/components/investing-news";
 
 const timelineConfig = {
   feedMode: "all_symbols", colorTheme: "dark", isTransparent: true,
@@ -44,16 +45,7 @@ export function LiveNews() {
 
   return (
     <section className="mx-auto max-w-6xl px-4 pt-10" aria-label="Live forex news">
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xl font-bold">Latest market news</h2>
-        <a href="https://www.tradingview.com/news/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">TradingView <ExternalLink className="size-4" /></a>
-      </div>
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        <iframe src={timelineUrl} title="Live market news from TradingView" height="500" width="100%" className="block w-full border-0" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" />
-      </div>
-      <p className="mt-3 text-xs text-muted-foreground">News provided by <a href="https://www.tradingview.com/news/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">TradingView</a>.</p>
-
-      <div className="mt-8 border-y border-border bg-secondary/40" aria-label="FXStreet headline ticker">
+      <div className="border-y border-border bg-secondary/40" aria-label="FXStreet headline ticker">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-border px-4 py-3">
           <h2 className="flex items-center gap-2 font-sans text-sm font-semibold"><span className="size-2 rounded-full bg-primary" />FXStreet headlines</h2>
           <div className="flex items-center gap-2">
@@ -80,6 +72,15 @@ export function LiveNews() {
         ) : <p className="px-4 py-5 text-sm text-muted-foreground">{loading ? "Loading latest headlines…" : <>Headlines are temporarily unavailable. <a href="https://www.fxstreet.com/news" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">Read FXStreet news ↗</a></>}</p>}
       </div>
       <p className="mt-3 text-xs text-muted-foreground">Headlines: <a href="https://www.fxstreet.com/news" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">FXStreet</a> · Feed delivery: RSS2JSON{failed && headlines.length > 0 ? " · Showing the last available headlines" : ""}</p>
+      <InvestingNews />
+      <div className="mb-4 mt-10 flex flex-wrap items-center justify-between gap-3">
+        <h2 className="text-2xl font-bold">TradingView news</h2>
+        <a href="https://www.tradingview.com/news/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">TradingView <ExternalLink className="size-4" /></a>
+      </div>
+      <div className="overflow-hidden rounded-lg border border-border bg-card">
+        <iframe src={timelineUrl} title="Live market news from TradingView" height="500" width="100%" className="block w-full border-0" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" />
+      </div>
+      <p className="mt-3 text-xs text-muted-foreground">News provided by <a href="https://www.tradingview.com/news/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">TradingView</a>.</p>
     </section>
   );
 }
