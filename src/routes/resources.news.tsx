@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { CardGrid, PageHero, meta } from "@/components/site-layout";
+import { LiveNews } from "@/components/live-news";
 
 export const Route = createFileRoute("/resources/news")({
-  head: () => meta("Forex News", "The best free sources for forex news and the economic calendar."),
+  head: () => meta("Forex News", "Follow live forex news from TradingView and the latest FXStreet headlines on Learn Train Trade."),
   component: () => (
     <>
       <PageHero eyebrow="Resources · News" title="Forex News" intro="Big news moves markets. These free sources help you know what is coming and react with a plan." />
+      <LiveNews />
       <CardGrid items={[
         { tag: "Calendar", title: "Forex Factory", text: "The go-to economic calendar with impact ratings for every release.", href: "https://www.forexfactory.com/calendar" },
         { tag: "Headlines", title: "Reuters Markets", text: "Fast, reliable global financial and currency news.", href: "https://www.reuters.com/markets/currencies/" },

@@ -1,3 +1,4 @@
 - [x] Build site pages with sample content
 - [x] Add linked Economic Calendar tile and Investing.com calendar page (provider blocks preview access; direct link included)
+- [x] Add live embedded TradingView news and an updating FXStreet headline ticker to News
 - [ ] Replace sample content and channel link (waiting on owner)

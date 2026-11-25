@@ -30,3 +30,4 @@ use the editor.
 <!-- LOVABLE:END -->
 
 - Embed the economic calendar using Investing.com's public HTTPS iframe with visible provider attribution; keep third-party calendar execution isolated from the app.
+- Keep TradingView news isolated in a provider iframe; fetch FXStreet public RSS headlines through RSS2JSON in the browser with validated provider links and periodic refresh, so live news needs no private credentials or app backend.
