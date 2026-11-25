@@ -28,3 +28,5 @@ use the editor.
   own key and store it in Secrets.
 - **Secrets.** Lovable manages them. Do not put secret values in the repo.
 <!-- LOVABLE:END -->
+
+- Embed the economic calendar using Investing.com's public HTTPS iframe with visible provider attribution; keep third-party calendar execution isolated from the app.

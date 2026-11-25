@@ -1,2 +1,3 @@
 - [x] Build site pages with sample content
+- [x] Add linked Economic Calendar tile and Investing.com calendar page (provider blocks preview access; direct link included)
 - [ ] Replace sample content and channel link (waiting on owner)
