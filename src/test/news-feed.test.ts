@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { INVESTING_MAX_AGE_DAYS, parseHeadlines, parseProviderHeadlines, recentHeadlines } from "@/lib/news-feed";
+import { FXSTREET_MAX_AGE_DAYS, INVESTING_MAX_AGE_DAYS, parseHeadlines, parseProviderHeadlines, recentHeadlines } from "@/lib/news-feed";
 
 describe("Live headlines", () => {
   it("keeps the latest FXStreet headline first and interprets feed dates as UTC", () => {
@@ -30,5 +30,16 @@ describe("Live headlines", () => {
   });
   it("does not show future-dated headlines", () => {
     expect(recentHeadlines([{ title: "Future", link: "https://www.investing.com/news/future", publishedAt: "2026-11-26T00:00:00Z" }], 2, Date.parse("2026-11-25T23:43:00Z"))).toEqual([]);
+  });
+  it("keeps FXStreet news through exactly three days and expires it as time advances even without fresh headlines", () => {
+    const now = Date.parse("2026-11-25T23:55:00Z");
+    const headlines = parseHeadlines({ status: "ok", items: [
+      { title: "Recent", link: "https://www.fxstreet.com/news/recent", pubDate: "2026-11-25 22:00:00" },
+      { title: "Boundary", link: "https://www.fxstreet.com/news/boundary", pubDate: "2026-11-22 23:55:00" },
+      { title: "Expired", link: "https://www.fxstreet.com/news/expired", pubDate: "2026-11-22 23:54:59" },
+    ] });
+    expect(FXSTREET_MAX_AGE_DAYS).toBe(3);
+    expect(recentHeadlines(headlines, FXSTREET_MAX_AGE_DAYS, now).map((h) => h.title)).toEqual(["Recent", "Boundary"]);
+    expect(recentHeadlines(headlines, FXSTREET_MAX_AGE_DAYS, now + 1000).map((h) => h.title)).toEqual(["Recent"]);
   });
 });

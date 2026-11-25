@@ -3,7 +3,7 @@ import { CardGrid, PageHero, meta } from "@/components/site-layout";
 import { LiveNews } from "@/components/live-news";
 
 export const Route = createFileRoute("/resources/news")({
-  head: () => meta("Forex News", "Follow the FXStreet headline ticker, Investing.com forex news from the last two days, and TradingView market news on Learn Train Trade."),
+  head: () => meta("Forex News", "Follow the FXStreet headline ticker, Investing.com forex news from the last two days, and FXStreet news from the last three days on Learn Train Trade."),
   component: () => (
     <>
       <PageHero eyebrow="Resources · News" title="Forex News" intro="Big news moves markets. These free sources help you know what is coming and react with a plan." />

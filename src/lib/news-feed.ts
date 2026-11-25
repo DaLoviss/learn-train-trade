@@ -4,6 +4,7 @@ export const FXSTREET_FEED_URL = "https://api.rss2json.com/v1/api.json?rss_url=h
 export const NEWS_REFRESH_MS = 5 * 60 * 1000;
 export const INVESTING_FEED_URL = "https://api.rss2json.com/v1/api.json?rss_url=https%3A%2F%2Fwww.investing.com%2Frss%2Fnews_1.rss";
 export const INVESTING_MAX_AGE_DAYS = 2;
+export const FXSTREET_MAX_AGE_DAYS = 3;
 
 export function parseProviderHeadlines(data: unknown, providerHost: string): NewsHeadline[] {
   if (!data || typeof data !== "object" || !("status" in data) || data.status !== "ok" || !("items" in data) || !Array.isArray(data.items)) {

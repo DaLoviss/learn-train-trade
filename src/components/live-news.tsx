@@ -1,14 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { ExternalLink, Pause, Play, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { FXSTREET_FEED_URL, NEWS_REFRESH_MS, parseHeadlines, type NewsHeadline } from "@/lib/news-feed";
+import { FXSTREET_FEED_URL, FXSTREET_MAX_AGE_DAYS, NEWS_REFRESH_MS, parseHeadlines, recentHeadlines, type NewsHeadline } from "@/lib/news-feed";
 import { InvestingNews } from "@/components/investing-news";
-
-const timelineConfig = {
-  feedMode: "all_symbols", colorTheme: "dark", isTransparent: true,
-  displayMode: "regular", width: "100%", height: 500, locale: "en",
-};
-const timelineUrl = `https://s.tradingview.com/embed-widget/timeline/?locale=en#${encodeURIComponent(JSON.stringify(timelineConfig))}`;
 
 export function LiveNews() {
   const [headlines, setHeadlines] = useState<NewsHeadline[]>([]);
@@ -16,8 +10,10 @@ export function LiveNews() {
   const [failed, setFailed] = useState(false);
   const [paused, setPaused] = useState(false);
   const [checkedAt, setCheckedAt] = useState<Date | null>(null);
+  const [now, setNow] = useState(0);
 
   const refresh = useCallback(async (signal?: AbortSignal) => {
+    setNow(Date.now());
     setLoading(true);
     try {
       const response = await fetch(FXSTREET_FEED_URL, { ...(signal ? { signal } : {}) });
@@ -32,7 +28,7 @@ export function LiveNews() {
       if (signal?.aborted) return;
       setFailed(true);
     } finally {
-      if (!signal?.aborted) setLoading(false);
+      if (!signal?.aborted) { setNow(Date.now()); setLoading(false); }
     }
   }, []);
 
@@ -40,9 +36,11 @@ export function LiveNews() {
     const controller = new AbortController();
     void refresh(controller.signal);
     const interval = window.setInterval(() => { void refresh(controller.signal); }, NEWS_REFRESH_MS);
-    return () => { controller.abort(); window.clearInterval(interval); };
+    const clock = window.setInterval(() => setNow(Date.now()), 1000);
+    return () => { controller.abort(); window.clearInterval(interval); window.clearInterval(clock); };
   }, [refresh]);
 
+  const current = recentHeadlines(headlines, FXSTREET_MAX_AGE_DAYS, now);
   return (
     <section className="mx-auto max-w-6xl px-4 pt-10" aria-label="Live forex news">
       <div className="border-y border-border bg-secondary/40" aria-label="FXStreet headline ticker">
@@ -73,14 +71,22 @@ export function LiveNews() {
       </div>
       <p className="mt-3 text-xs text-muted-foreground">Headlines: <a href="https://www.fxstreet.com/news" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">FXStreet</a> · Feed delivery: RSS2JSON{failed && headlines.length > 0 ? " · Showing the last available headlines" : ""}</p>
       <InvestingNews />
-      <div className="mb-4 mt-10 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-2xl font-bold">TradingView news</h2>
-        <a href="https://www.tradingview.com/news/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-sm font-semibold text-primary hover:underline">TradingView <ExternalLink className="size-4" /></a>
-      </div>
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        <iframe src={timelineUrl} title="Live market news from TradingView" height="500" width="100%" className="block w-full border-0" sandbox="allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox" />
-      </div>
-      <p className="mt-3 text-xs text-muted-foreground">News provided by <a href="https://www.tradingview.com/news/" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">TradingView</a>.</p>
+      <section className="mt-10" aria-label="FXStreet news from the last three days">
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <div><h2 className="text-2xl font-bold">FXStreet news</h2><p className="mt-1 text-xs text-muted-foreground">Last 3 days</p></div>
+          <Button variant="ghost" size="icon" aria-label="Refresh FXStreet news" title="Refresh FXStreet news" disabled={loading} onClick={() => { void refresh(); }}><RefreshCw className={loading ? "animate-spin" : ""} /></Button>
+        </div>
+        <div className="divide-y divide-border border-y border-border">
+          {current.map((headline) => (
+            <a key={headline.link} href={headline.link} target="_blank" rel="noopener noreferrer" className="flex items-start justify-between gap-4 py-5 transition-colors hover:text-primary">
+              <div><time dateTime={headline.publishedAt} className="text-xs text-muted-foreground">{new Date(headline.publishedAt).toLocaleString([], { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</time><h3 className="mt-2 font-sans text-base font-semibold leading-relaxed">{headline.title}</h3></div>
+              <ExternalLink className="mt-1 size-4 shrink-0 text-primary" />
+            </a>
+          ))}
+          {current.length === 0 && <p className="py-6 text-sm text-muted-foreground" role="status">{loading ? "Loading FXStreet news…" : failed ? "FXStreet news is temporarily unavailable." : "No FXStreet headlines from the last three days are available."}</p>}
+        </div>
+        <p className="mt-3 text-xs text-muted-foreground">News provided by <a href="https://www.fxstreet.com/news" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">FXStreet</a> · Feed delivery: RSS2JSON{failed && current.length > 0 ? " · Updates temporarily unavailable" : ""}</p>
+      </section>
     </section>
   );
 }
