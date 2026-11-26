@@ -1,38 +1,56 @@
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { GROUPS } from "@/lib/instruments";
 import {
+  DAY_RANGE_OPTIONS,
   HOLIDAY_HOURS_SOURCE,
   addDaysToDateKey,
   allScheduleRows,
+  dayRangeKeys,
   formatScheduleDate,
+  formatScheduleDateShort,
   formatScheduleWindows,
   getDateKeyInTimeZone,
   getDaySchedule,
+  type DayRange,
 } from "@/lib/trading-schedule";
 
-type DayView = "both" | "today" | "tomorrow";
-
 const SCHEDULE_ROWS = allScheduleRows();
+
+function ScheduleWindows({ text }: { text: string }) {
+  const parts = text.split(" · ");
+  return (
+    <>
+      {parts.map((part, index) => (
+        <Fragment key={`${part}-${index}`}>
+          {index > 0 && <span className="text-muted-foreground"> · </span>}
+          <span className="whitespace-nowrap">{part}</span>
+        </Fragment>
+      ))}
+    </>
+  );
+}
 
 function ScheduleCell({
   symbol,
   category,
   dateKey,
   timeZone,
+  compact,
 }: {
   symbol: string;
   category: string;
   dateKey: string;
   timeZone: string;
+  compact: boolean;
 }) {
   const schedule = getDaySchedule(symbol, category, dateKey);
   const isEarly = schedule.status === "early-close";
 
   return (
-    <div className={isEarly ? "rounded-lg border border-primary/40 bg-primary/10 p-3" : "py-1"}>
-      <div className="flex flex-wrap items-center gap-2">
+    <div className={isEarly ? "rounded-lg border border-primary/40 bg-primary/10 p-2.5" : "py-1"}>
+      <div className={`flex flex-wrap items-center gap-x-2 gap-y-1 ${compact ? "text-xs" : ""}`}>
         <span className={schedule.status === "closed" ? "text-muted-foreground" : "font-medium text-foreground"}>
-          {formatScheduleWindows(schedule, timeZone)}
+          <ScheduleWindows text={formatScheduleWindows(schedule, timeZone)} />
         </span>
         {isEarly && (
           <span className="rounded-full bg-primary px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary-foreground">
@@ -47,13 +65,21 @@ function ScheduleCell({
   );
 }
 
+function scheduleHeading(dayRange: DayRange) {
+  if (dayRange === "this-week") return "This Week’s Trading Times";
+  if (dayRange === "rest-of-week") return "Rest of This Week’s Trading Times";
+  if (dayRange === "today") return "Today’s Trading Times";
+  if (dayRange === "tomorrow") return "Tomorrow’s Trading Times";
+  return "Today & Tomorrow’s Trading Times";
+}
+
 export function TradingSchedule() {
   const [clock, setClock] = useState<Date | null>(null);
   const [localTimeZone, setLocalTimeZone] = useState("UTC");
   const [category, setCategory] = useState("all");
   const [query, setQuery] = useState("");
   const [timeZoneChoice, setTimeZoneChoice] = useState("local");
-  const [dayView, setDayView] = useState<DayView>("both");
+  const [dayRange, setDayRange] = useState<DayRange>("both");
   const [earlyOnly, setEarlyOnly] = useState(false);
 
   useEffect(() => {
@@ -67,28 +93,31 @@ export function TradingSchedule() {
   const timeZone = timeZoneChoice === "local" ? localTimeZone : timeZoneChoice;
   const today = clock ? getDateKeyInTimeZone(clock, timeZone) : "";
   const tomorrow = today ? addDaysToDateKey(today, 1) : "";
-  const showToday = dayView !== "tomorrow";
-  const showTomorrow = dayView !== "today";
+  const dayKeys = useMemo(() => dayRangeKeys(dayRange, today), [dayRange, today]);
+  const compactDates = dayKeys.length > 2;
+  const columnCount = 3 + dayKeys.length;
 
   const rows = useMemo(() => {
-    if (!today || !tomorrow) return [];
+    if (!today || dayKeys.length === 0) return [];
     const search = query.trim().toLowerCase();
     return SCHEDULE_ROWS.filter((row) => {
       if (category !== "all" && row.category !== category) return false;
       if (search && !`${row.symbol} ${row.name}`.toLowerCase().includes(search)) return false;
       if (!earlyOnly) return true;
-      const dates = dayView === "today" ? [today] : dayView === "tomorrow" ? [tomorrow] : [today, tomorrow];
-      return dates.some((date) => getDaySchedule(row.symbol, row.category, date).status === "early-close");
+      return dayKeys.some((dateKey) => getDaySchedule(row.symbol, row.category, dateKey).status === "early-close");
     });
-  }, [category, dayView, earlyOnly, query, today, tomorrow]);
+  }, [category, dayKeys, earlyOnly, query, today]);
 
   const resetFilters = () => {
     setCategory("all");
     setQuery("");
-    setDayView("both");
+    setDayRange("both");
     setEarlyOnly(false);
     setTimeZoneChoice("local");
   };
+
+  const firstDay = dayKeys[0];
+  const lastDay = dayKeys[dayKeys.length - 1];
 
   return (
     <section className="mx-auto mt-16 max-w-6xl px-4" aria-labelledby="trading-schedule-title">
@@ -96,10 +125,11 @@ export function TradingSchedule() {
         <div>
           <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Plan your trading day</p>
           <h2 id="trading-schedule-title" className="mt-2 text-2xl font-bold text-gold md:text-3xl">
-            Today & Tomorrow’s Trading Times
+            {scheduleHeading(dayRange)}
           </h2>
           <p className="mt-2 max-w-2xl text-sm leading-relaxed text-muted-foreground">
-            Filter by market or instrument and look for the gold early-close label before placing a trade.
+            Choose the days you want to see, filter by market or instrument and look for the gold early-close label
+            before placing a trade.
           </p>
         </div>
         <button
@@ -154,13 +184,13 @@ export function TradingSchedule() {
         <label className="text-sm font-medium text-foreground">
           <span className="mb-2 block text-xs uppercase tracking-wider text-muted-foreground">Days displayed</span>
           <select
-            value={dayView}
-            onChange={(event) => setDayView(event.target.value as DayView)}
+            value={dayRange}
+            onChange={(event) => setDayRange(event.target.value as DayRange)}
             className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-sm text-foreground outline-none focus:border-primary"
           >
-            <option value="both">Today and tomorrow</option>
-            <option value="today">Today only</option>
-            <option value="tomorrow">Tomorrow only</option>
+            {DAY_RANGE_OPTIONS.map((option) => (
+              <option key={option.value} value={option.value}>{option.label}</option>
+            ))}
           </select>
         </label>
 
@@ -177,42 +207,67 @@ export function TradingSchedule() {
 
       <div className="mt-5 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
         <p>{rows.length} of {SCHEDULE_ROWS.length} instruments shown</p>
-        <p>Times shown in {timeZoneChoice === "local" ? `your local time (${localTimeZone})` : timeZone.replaceAll("_", " ")}</p>
+        <p>
+          {firstDay && lastDay && dayKeys.length > 1
+            ? `Days shown: ${formatScheduleDate(firstDay)} – ${formatScheduleDate(lastDay)} · `
+            : ""}
+          Times in {timeZoneChoice === "local" ? `your local time (${localTimeZone})` : timeZone.replaceAll("_", " ")}
+        </p>
       </div>
 
       <div className="mt-3 overflow-x-auto rounded-xl border border-border bg-card">
-        <table className={`w-full border-collapse text-left text-sm ${dayView === "both" ? "min-w-[1050px]" : "min-w-[720px]"}`}>
-          <caption className="sr-only">Current and next day instrument trading hours with early closure warnings</caption>
+        <table
+          className="w-full border-collapse text-left text-sm"
+          style={{ minWidth: compactDates ? 400 + dayKeys.length * 168 : 460 + dayKeys.length * 190 }}
+        >
+          <caption className="sr-only">
+            Instrument trading hours for the selected days of the week with early closure warnings
+          </caption>
           <thead>
             <tr className="border-b border-border bg-secondary/50 text-xs font-semibold uppercase tracking-wider text-primary">
               <th className="px-5 py-3.5">Symbol</th>
               <th className="px-5 py-3.5">Instrument</th>
               <th className="px-5 py-3.5">Category</th>
-              {showToday && <th className="px-5 py-3.5">Today{today ? ` · ${formatScheduleDate(today)}` : ""}</th>}
-              {showTomorrow && <th className="px-5 py-3.5">Tomorrow{tomorrow ? ` · ${formatScheduleDate(tomorrow)}` : ""}</th>}
+              {dayKeys.map((dateKey) => {
+                const isToday = dateKey === today;
+                const isTomorrow = dateKey === tomorrow;
+                const label = compactDates ? formatScheduleDateShort(dateKey) : formatScheduleDate(dateKey);
+                return (
+                  <th
+                    key={dateKey}
+                    className={`py-3.5 ${compactDates ? "px-2.5" : "px-4"} ${isToday ? "bg-primary/10" : ""}`}
+                  >
+                    <span className="block">{isToday ? "Today" : isTomorrow ? "Tomorrow" : " "}</span>
+                    <span className="mt-0.5 block text-[11px] font-medium normal-case tracking-normal text-muted-foreground">
+                      {label}
+                    </span>
+                  </th>
+                );
+              })}
             </tr>
           </thead>
           <tbody className="divide-y divide-border">
             {!clock ? (
-              <tr><td colSpan={5} className="px-5 py-10 text-center text-muted-foreground">Loading the latest daily schedule…</td></tr>
+              <tr><td colSpan={columnCount} className="px-5 py-10 text-center text-muted-foreground">Loading the latest daily schedule…</td></tr>
             ) : rows.length === 0 ? (
-              <tr><td colSpan={5} className="px-5 py-10 text-center text-muted-foreground">No instruments match these filters. Try resetting the table.</td></tr>
+              <tr><td colSpan={columnCount} className="px-5 py-10 text-center text-muted-foreground">No instruments match these filters. Try resetting the table.</td></tr>
             ) : (
               rows.map((row) => (
                 <tr key={row.symbol} className="align-top transition-colors hover:bg-secondary/30">
                   <td className="px-5 py-4 font-semibold text-primary">{row.symbol}</td>
                   <td className="px-5 py-4 font-medium text-foreground">{row.name}</td>
                   <td className="px-5 py-4 text-muted-foreground">{row.category}</td>
-                  {showToday && (
-                    <td className="px-5 py-4">
-                      <ScheduleCell symbol={row.symbol} category={row.category} dateKey={today} timeZone={timeZone} />
+                  {dayKeys.map((dateKey) => (
+                    <td key={dateKey} className={`py-4 align-top ${compactDates ? "px-2.5" : "px-4"} ${dateKey === today ? "bg-primary/5" : ""}`}>
+                      <ScheduleCell
+                        symbol={row.symbol}
+                        category={row.category}
+                        dateKey={dateKey}
+                        timeZone={timeZone}
+                        compact={compactDates}
+                      />
                     </td>
-                  )}
-                  {showTomorrow && (
-                    <td className="px-5 py-4">
-                      <ScheduleCell symbol={row.symbol} category={row.category} dateKey={tomorrow} timeZone={timeZone} />
-                    </td>
-                  )}
+                  ))}
                 </tr>
               ))
             )}

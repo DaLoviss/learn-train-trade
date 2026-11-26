@@ -3,8 +3,10 @@ import { describe, expect, it } from "vitest";
 import { GROUPS } from "@/lib/instruments";
 import {
   addDaysToDateKey,
+  dayRangeKeys,
   formatScheduleWindows,
   getDaySchedule,
+  startOfWeekDateKey,
 } from "@/lib/trading-schedule";
 
 describe("instrument trading schedule", () => {
@@ -70,5 +72,52 @@ describe("instrument trading schedule", () => {
   it("moves to the next calendar day across month boundaries", () => {
     expect(addDaysToDateKey("2026-11-30", 1)).toBe("2026-12-01");
     expect(addDaysToDateKey("2026-12-31", 1)).toBe("2027-01-01");
+  });
+
+  it("shows the whole Monday to Sunday week when this week is selected", () => {
+    expect(dayRangeKeys("this-week", "2026-11-26")).toEqual([
+      "2026-11-23",
+      "2026-11-24",
+      "2026-11-25",
+      "2026-11-26",
+      "2026-11-27",
+      "2026-11-28",
+      "2026-11-29",
+    ]);
+  });
+
+  it("shows only today through Sunday for the rest of the week", () => {
+    expect(dayRangeKeys("rest-of-week", "2026-11-26")).toEqual([
+      "2026-11-26",
+      "2026-11-27",
+      "2026-11-28",
+      "2026-11-29",
+    ]);
+  });
+
+  it("shows a single day when the week has one day left", () => {
+    expect(dayRangeKeys("rest-of-week", "2026-11-29")).toEqual(["2026-11-29"]);
+  });
+
+  it("keeps the today and tomorrow views unchanged", () => {
+    expect(dayRangeKeys("today", "2026-11-26")).toEqual(["2026-11-26"]);
+    expect(dayRangeKeys("tomorrow", "2026-11-26")).toEqual(["2026-11-27"]);
+    expect(dayRangeKeys("both", "2026-11-26")).toEqual(["2026-11-26", "2026-11-27"]);
+  });
+
+  it("rolls Sunday back to the Monday that started its week", () => {
+    expect(startOfWeekDateKey("2026-11-29")).toBe("2026-11-23");
+    expect(startOfWeekDateKey("2026-11-23")).toBe("2026-11-23");
+  });
+
+  it("returns a schedule for every instrument on every day of the week", () => {
+    for (const dateKey of dayRangeKeys("this-week", "2026-11-26")) {
+      for (const group of GROUPS) {
+        for (const item of group.items) {
+          const schedule = getDaySchedule(item.symbol, group.title, dateKey);
+          expect(schedule.status).toMatch(/regular|early-close|closed/);
+        }
+      }
+    }
   });
 });

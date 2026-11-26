@@ -5,4 +5,5 @@
 - [x] Replace TradingView with FXStreet headlines restricted to the last three days, below Investing.com
 - [x] Add Instruments link under Resources and Instruments page with symbols and daily trading times
 - [x] Add Stock Indices group (US30, US500, NAS100, DE40, UK100, JP225, HK50 and more) to the Instruments page
+- [x] Extend the Instruments day filter to any day of the current week (rest of week, full Mon–Sun week)
 - [ ] Replace sample content and channel link (waiting on owner)

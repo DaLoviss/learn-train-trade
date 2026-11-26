@@ -2,6 +2,15 @@ import { GROUPS } from "@/lib/instruments";
 
 export type ScheduleStatus = "regular" | "early-close" | "closed";
 export type MarketWindow = { open: number; close: number };
+export type DayRange = "both" | "today" | "tomorrow" | "rest-of-week" | "this-week";
+
+export const DAY_RANGE_OPTIONS: { value: DayRange; label: string }[] = [
+  { value: "both", label: "Today and tomorrow" },
+  { value: "today", label: "Today only" },
+  { value: "tomorrow", label: "Tomorrow only" },
+  { value: "rest-of-week", label: "Rest of this week (today to Sunday)" },
+  { value: "this-week", label: "This week (Monday to Sunday)" },
+];
 export type DaySchedule = {
   dateKey: string;
   marketTimeZone: string;
@@ -91,6 +100,21 @@ export function addDaysToDateKey(dateKey: string, amount: number) {
 function dayOfWeek(dateKey: string) {
   const { year, month, day } = parseDateKey(dateKey);
   return new Date(Date.UTC(year, month - 1, day, 12)).getUTCDay();
+}
+
+export function startOfWeekDateKey(dateKey: string) {
+  const mondayOffset = (dayOfWeek(dateKey) + 6) % 7;
+  return addDaysToDateKey(dateKey, -mondayOffset);
+}
+
+export function dayRangeKeys(dayRange: DayRange, today: string) {
+  if (!today) return [];
+  if (dayRange === "today") return [today];
+  if (dayRange === "tomorrow") return [addDaysToDateKey(today, 1)];
+  if (dayRange === "both") return [today, addDaysToDateKey(today, 1)];
+
+  const week = Array.from({ length: 7 }, (_, index) => addDaysToDateKey(startOfWeekDateKey(today), index));
+  return dayRange === "this-week" ? week : week.filter((dateKey) => dateKey >= today);
 }
 
 function thanksgivingDateKey(year: number) {
@@ -267,6 +291,15 @@ export function formatScheduleDate(dateKey: string) {
   return new Intl.DateTimeFormat("en-US", {
     weekday: "short",
     month: "short",
+    day: "numeric",
+    timeZone: "UTC",
+  }).format(new Date(Date.UTC(year, month - 1, day, 12)));
+}
+
+export function formatScheduleDateShort(dateKey: string) {
+  const { year, month, day } = parseDateKey(dateKey);
+  return new Intl.DateTimeFormat("en-US", {
+    weekday: "short",
     day: "numeric",
     timeZone: "UTC",
   }).format(new Date(Date.UTC(year, month - 1, day, 12)));

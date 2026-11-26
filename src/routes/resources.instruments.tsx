@@ -84,7 +84,7 @@ export const Route = createFileRoute("/resources/instruments")({
   head: () =>
     meta(
       "Instruments",
-      "Forex currency pairs, metals and stock indices with today and tomorrow's trading times, early closure warnings and active sessions.",
+      "Forex currency pairs, metals and stock indices with selectable trading days from today through the rest of the week, early closure warnings and active sessions.",
     ),
   component: InstrumentsPage,
 });
