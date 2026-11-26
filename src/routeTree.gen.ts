@@ -19,6 +19,7 @@ import { Route as FreeEducationWhatIsForexRouteImport } from './routes/free-educ
 import { Route as FreeEducationWhyTradeRouteImport } from './routes/free-education.why-trade'
 import { Route as ResourcesIndexRouteImport } from './routes/resources.index'
 import { Route as ResourcesEconomicCalendarRouteImport } from './routes/resources.economic-calendar'
+import { Route as ResourcesInstrumentsRouteImport } from './routes/resources.instruments'
 import { Route as ResourcesNewsRouteImport } from './routes/resources.news'
 import { Route as ResourcesPropFirmsRouteImport } from './routes/resources.prop-firms'
 import { Route as ResourcesTradingToolsRouteImport } from './routes/resources.trading-tools'
@@ -76,6 +77,11 @@ const ResourcesEconomicCalendarRoute =
     path: '/economic-calendar',
     getParentRoute: () => ResourcesRoute,
   } as any)
+const ResourcesInstrumentsRoute = ResourcesInstrumentsRouteImport.update({
+  id: '/instruments',
+  path: '/instruments',
+  getParentRoute: () => ResourcesRoute,
+} as any)
 const ResourcesNewsRoute = ResourcesNewsRouteImport.update({
   id: '/news',
   path: '/news',
@@ -101,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/free-education/what-is-forex': typeof FreeEducationWhatIsForexRoute
   '/free-education/why-trade': typeof FreeEducationWhyTradeRoute
   '/resources/economic-calendar': typeof ResourcesEconomicCalendarRoute
+  '/resources/instruments': typeof ResourcesInstrumentsRoute
   '/resources/news': typeof ResourcesNewsRoute
   '/resources/prop-firms': typeof ResourcesPropFirmsRoute
   '/resources/trading-tools': typeof ResourcesTradingToolsRoute
@@ -114,6 +121,7 @@ export interface FileRoutesByTo {
   '/free-education/what-is-forex': typeof FreeEducationWhatIsForexRoute
   '/free-education/why-trade': typeof FreeEducationWhyTradeRoute
   '/resources/economic-calendar': typeof ResourcesEconomicCalendarRoute
+  '/resources/instruments': typeof ResourcesInstrumentsRoute
   '/resources/news': typeof ResourcesNewsRoute
   '/resources/prop-firms': typeof ResourcesPropFirmsRoute
   '/resources/trading-tools': typeof ResourcesTradingToolsRoute
@@ -130,6 +138,7 @@ export interface FileRoutesById {
   '/free-education/what-is-forex': typeof FreeEducationWhatIsForexRoute
   '/free-education/why-trade': typeof FreeEducationWhyTradeRoute
   '/resources/economic-calendar': typeof ResourcesEconomicCalendarRoute
+  '/resources/instruments': typeof ResourcesInstrumentsRoute
   '/resources/news': typeof ResourcesNewsRoute
   '/resources/prop-firms': typeof ResourcesPropFirmsRoute
   '/resources/trading-tools': typeof ResourcesTradingToolsRoute
@@ -147,6 +156,7 @@ export interface FileRouteTypes {
     | '/free-education/what-is-forex'
     | '/free-education/why-trade'
     | '/resources/economic-calendar'
+    | '/resources/instruments'
     | '/resources/news'
     | '/resources/prop-firms'
     | '/resources/trading-tools'
@@ -160,6 +170,7 @@ export interface FileRouteTypes {
     | '/free-education/what-is-forex'
     | '/free-education/why-trade'
     | '/resources/economic-calendar'
+    | '/resources/instruments'
     | '/resources/news'
     | '/resources/prop-firms'
     | '/resources/trading-tools'
@@ -175,6 +186,7 @@ export interface FileRouteTypes {
     | '/free-education/what-is-forex'
     | '/free-education/why-trade'
     | '/resources/economic-calendar'
+    | '/resources/instruments'
     | '/resources/news'
     | '/resources/prop-firms'
     | '/resources/trading-tools'
@@ -261,6 +273,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ResourcesEconomicCalendarRouteImport
       parentRoute: typeof ResourcesRoute
     }
+    '/resources/instruments': {
+      id: '/resources/instruments'
+      path: '/instruments'
+      fullPath: '/resources/instruments'
+      preLoaderRoute: typeof ResourcesInstrumentsRouteImport
+      parentRoute: typeof ResourcesRoute
+    }
     '/resources/news': {
       id: '/resources/news'
       path: '/news'
@@ -305,6 +324,7 @@ const FreeEducationRouteWithChildren = FreeEducationRoute._addFileChildren(
 
 interface ResourcesRouteChildren {
   ResourcesEconomicCalendarRoute: typeof ResourcesEconomicCalendarRoute
+  ResourcesInstrumentsRoute: typeof ResourcesInstrumentsRoute
   ResourcesNewsRoute: typeof ResourcesNewsRoute
   ResourcesPropFirmsRoute: typeof ResourcesPropFirmsRoute
   ResourcesTradingToolsRoute: typeof ResourcesTradingToolsRoute
@@ -313,6 +333,7 @@ interface ResourcesRouteChildren {
 
 const ResourcesRouteChildren: ResourcesRouteChildren = {
   ResourcesEconomicCalendarRoute: ResourcesEconomicCalendarRoute,
+  ResourcesInstrumentsRoute: ResourcesInstrumentsRoute,
   ResourcesNewsRoute: ResourcesNewsRoute,
   ResourcesPropFirmsRoute: ResourcesPropFirmsRoute,
   ResourcesTradingToolsRoute: ResourcesTradingToolsRoute,
