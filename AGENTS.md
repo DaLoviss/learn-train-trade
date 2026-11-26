@@ -32,3 +32,4 @@ use the editor.
 - Fetch ForexFactory's public weekly economic calendar JSON through a TanStack Start server function and render it in the site's purple-and-gold theme with currency and impact filters and visible ForexFactory attribution.
 - Fetch FXStreet public RSS headlines through RSS2JSON in the browser with validated provider links and periodic refresh; share the feed between the ticker and date-filtered news list, advancing the cutoff clock even when refresh fails so stale articles expire without a backend.
 - Render Investing.com public RSS news through RSS2JSON with validated provider links and a rolling publication-time cutoff; filter at display time even after failed refreshes to keep expired articles out.
+- Keep the Instruments page's sessions and instrument lists (currency pairs, metals, stock indices) in `src/lib/instruments.ts` so tests can assert them; the route file only renders them.
