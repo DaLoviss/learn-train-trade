@@ -1,0 +1,74 @@
+import { describe, expect, it } from "vitest";
+
+import { GROUPS } from "@/lib/instruments";
+import {
+  addDaysToDateKey,
+  formatScheduleWindows,
+  getDaySchedule,
+} from "@/lib/trading-schedule";
+
+describe("instrument trading schedule", () => {
+  it("flags Thanksgiving 2026 as an early close for US indices", () => {
+    const schedule = getDaySchedule("US500", "Stock Indices", "2026-11-26");
+    expect(schedule.status).toBe("early-close");
+    expect(schedule.windows).toEqual([
+      { open: 0, close: 720 },
+      { open: 1020, close: 1440 },
+    ]);
+    expect(schedule.note).toContain("12:00 PM CT");
+  });
+
+  it("uses the later early close on the day after Thanksgiving", () => {
+    const schedule = getDaySchedule("US30", "Stock Indices", "2026-11-27");
+    expect(schedule.status).toBe("early-close");
+    expect(schedule.windows).toEqual([{ open: 0, close: 735 }]);
+    expect(schedule.note).toContain("12:15 PM CT");
+  });
+
+  it("shows metals closing at 1:30 PM CT on Thanksgiving", () => {
+    const schedule = getDaySchedule("XAU/USD", "Precious Metals", "2026-11-26");
+    expect(schedule.status).toBe("early-close");
+    expect(schedule.windows[0]?.close).toBe(810);
+    expect(schedule.note).toContain("1:30 PM CT");
+  });
+
+  it("keeps forex at regular hours on Thanksgiving itself", () => {
+    const schedule = getDaySchedule("EUR/USD", "Major Pairs", "2026-11-26");
+    expect(schedule.status).toBe("regular");
+    expect(schedule.windows).toEqual([{ open: 0, close: 1440 }]);
+  });
+
+  it("marks currency futures for their 1:45 PM CT Friday close", () => {
+    const schedule = getDaySchedule("GBP/USD", "Major Pairs", "2026-11-27");
+    expect(schedule.status).toBe("early-close");
+    expect(schedule.windows).toEqual([{ open: 0, close: 825 }]);
+  });
+
+  it("converts the Thanksgiving US-index halt to 18:00 UTC", () => {
+    const schedule = getDaySchedule("NAS100", "Stock Indices", "2026-11-26");
+    expect(formatScheduleWindows(schedule, "UTC")).toContain("18:00");
+  });
+
+  it("closes instruments on Saturday", () => {
+    for (const group of GROUPS) {
+      const item = group.items[0];
+      if (!item) throw new Error(`No instrument in ${group.title}`);
+      expect(getDaySchedule(item.symbol, group.title, "2026-11-28").status).toBe("closed");
+    }
+  });
+
+  it("provides a schedule for every listed instrument", () => {
+    for (const group of GROUPS) {
+      for (const item of group.items) {
+        const schedule = getDaySchedule(item.symbol, group.title, "2026-11-25");
+        expect(schedule.windows.length).toBeGreaterThan(0);
+        expect(schedule.marketTimeZone.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("moves to the next calendar day across month boundaries", () => {
+    expect(addDaysToDateKey("2026-11-30", 1)).toBe("2026-12-01");
+    expect(addDaysToDateKey("2026-12-31", 1)).toBe("2027-01-01");
+  });
+});

@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { PageHero, meta } from "@/components/site-layout";
+import { TradingSchedule } from "@/components/trading-schedule";
 import { GROUPS, SESSIONS, formatLocalWindow, formatUtcHour } from "@/lib/instruments";
 
 function InstrumentsPage() {
@@ -39,6 +40,8 @@ function InstrumentsPage() {
           ))}
         </div>
       </section>
+
+      <TradingSchedule />
 
       <div className="mx-auto mt-16 max-w-6xl space-y-12 px-4">
         {GROUPS.map((group) => (
@@ -81,7 +84,7 @@ export const Route = createFileRoute("/resources/instruments")({
   head: () =>
     meta(
       "Instruments",
-      "Forex currency pairs, metals and stock indices with their symbols, active sessions and daily trading times.",
+      "Forex currency pairs, metals and stock indices with today and tomorrow's trading times, early closure warnings and active sessions.",
     ),
   component: InstrumentsPage,
 });
