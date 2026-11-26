@@ -9,6 +9,7 @@ export const Route = createFileRoute("/resources/")({
       <CardGrid items={[
         { tag: "Stay informed", title: "News", text: "Where to follow market-moving headlines and the economic calendar.", to: "/resources/news" },
          { tag: "Market events", title: "Economic Calendar", text: "Track upcoming economic releases, forecasts and results with Investing.com.", to: "/resources/economic-calendar" },
+        { tag: "Market guide", title: "Instruments", text: "Forex currency pairs, their symbols and daily trading session times.", to: "/resources/instruments" },
         { tag: "Work smarter", title: "Trading Tools", text: "Charting platforms, calculators and journals to sharpen your trading.", to: "/resources/trading-tools" },
         { tag: "Get funded", title: "Prop Firms", text: "How prop firms work and what to check before you sign up.", to: "/resources/prop-firms" },
       ]} />

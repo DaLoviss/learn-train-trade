@@ -12,6 +12,7 @@ export const NAV: NavItem[] = [
     children: [
       { to: "/resources/news", label: "News" },
       { to: "/resources/economic-calendar", label: "Economic Calendar" },
+      { to: "/resources/instruments", label: "Instruments" },
       { to: "/resources/trading-tools", label: "Trading Tools" },
       { to: "/resources/prop-firms", label: "Prop Firms" },
     ],

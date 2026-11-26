@@ -3,4 +3,5 @@
 - [x] Add live embedded TradingView news and an updating FXStreet headline ticker to News
 - [x] Reorder News: FXStreet ticker, Investing.com (last 2 days), TradingView
 - [x] Replace TradingView with FXStreet headlines restricted to the last three days, below Investing.com
+- [x] Add Instruments link under Resources and Instruments page with symbols and daily trading times
 - [ ] Replace sample content and channel link (waiting on owner)

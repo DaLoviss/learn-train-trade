@@ -12,6 +12,11 @@ describe("App routing", () => {
     expect(router.matchRoutes("/resources/economic-calendar").at(-1)?.routeId).toBe("/resources/economic-calendar");
   });
 
+  it("matches the Instruments resource page", () => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+    expect(router.matchRoutes("/resources/instruments").at(-1)?.routeId).toBe("/resources/instruments");
+  });
+
   it("matches a page for / instead of falling back to not found", () => {
     const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
 
