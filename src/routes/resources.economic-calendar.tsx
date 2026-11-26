@@ -6,6 +6,7 @@ import {
   FOREX_FACTORY_CALENDAR_URL,
   filterCalendarEvents,
   formatEventTime,
+  getCalendarDays,
   groupEventsByDay,
   type ImpactLevel,
 } from "@/lib/economic-calendar";
@@ -33,7 +34,7 @@ const IMPACT_STYLES: Record<ImpactLevel, string> = {
   High: "border-destructive/50 bg-destructive/20 text-destructive-foreground",
   Medium: "border-primary/50 bg-primary/15 text-primary",
   Low: "border-border bg-secondary/60 text-muted-foreground",
-  Holiday: "border-border bg-muted text-muted-foreground",
+  Holiday: "border-holiday bg-holiday text-holiday-foreground",
 };
 
 function EconomicCalendarPage() {
@@ -41,15 +42,21 @@ function EconomicCalendarPage() {
   const { data, refetch, isFetching } = useSuspenseQuery(calendarQueryOptions);
   const [currency, setCurrency] = useState("ALL");
   const [impact, setImpact] = useState("ALL");
+  const [selectedDate, setSelectedDate] = useState("ALL");
 
   const currencies = useMemo(() => {
     const set = new Set(data.events.map((e) => e.country));
     return ["ALL", ...Array.from(set).sort()];
   }, [data.events]);
 
+  const availableDays = useMemo(
+    () => getCalendarDays(data.events, hydrated),
+    [data.events, hydrated],
+  );
+
   const filtered = useMemo(
-    () => filterCalendarEvents(data.events, currency, impact),
-    [data.events, currency, impact],
+    () => filterCalendarEvents(data.events, currency, impact, selectedDate, hydrated),
+    [data.events, currency, impact, selectedDate, hydrated],
   );
 
   const dayGroups = useMemo(() => groupEventsByDay(filtered, hydrated), [filtered, hydrated]);
@@ -95,6 +102,35 @@ function EconomicCalendarPage() {
           </div>
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-5 py-3">
+            {availableDays.length > 0 && (
+              <div className="flex w-full flex-wrap items-center gap-1.5" role="group" aria-label="Filter by date">
+                <button
+                  type="button"
+                  onClick={() => setSelectedDate("ALL")}
+                  className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
+                    selectedDate === "ALL"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary/60 text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  All Dates
+                </button>
+                {availableDays.map((day) => (
+                  <button
+                    key={day.dayKey}
+                    type="button"
+                    onClick={() => setSelectedDate(day.dayKey)}
+                    className={`rounded-md px-2.5 py-1 text-xs font-semibold transition ${
+                      selectedDate === day.dayKey
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-secondary/60 text-muted-foreground hover:text-foreground"
+                    }`}
+                  >
+                    {day.label}
+                  </button>
+                ))}
+              </div>
+            )}
             <div className="flex flex-wrap items-center gap-1.5" role="group" aria-label="Filter by currency">
               {currencies.map((code) => (
                 <button
@@ -147,11 +183,12 @@ function EconomicCalendarPage() {
             </p>
           ) : (
             <div className="divide-y divide-border">
-              <div className="hidden grid-cols-[5.5rem_4.5rem_5.5rem_1fr_5.5rem_5.5rem] gap-3 bg-secondary/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground md:grid">
+              <div className="hidden grid-cols-[5.5rem_4.5rem_5.5rem_1fr_5.5rem_5.5rem_5.5rem] gap-3 bg-secondary/20 px-5 py-2.5 text-xs font-semibold uppercase tracking-wider text-muted-foreground md:grid">
                 <span>Time</span>
                 <span>Currency</span>
                 <span>Impact</span>
                 <span>Event</span>
+                <span className="text-right">Actual</span>
                 <span className="text-right">Forecast</span>
                 <span className="text-right">Previous</span>
               </div>
@@ -161,37 +198,50 @@ function EconomicCalendarPage() {
                     {group.label}
                   </div>
                   <ul className="divide-y divide-border/60">
-                    {group.events.map((event) => (
-                      <li
-                        key={event.id}
-                        className="grid grid-cols-1 gap-2 px-5 py-3 text-sm transition hover:bg-secondary/25 md:grid-cols-[5.5rem_4.5rem_5.5rem_1fr_5.5rem_5.5rem] md:items-center md:gap-3"
-                      >
-                        <div className="flex items-center gap-2 md:contents">
-                          <span className="text-xs font-medium text-muted-foreground">
-                            {formatEventTime(event.timestamp, hydrated)}
+                    {group.events.map((event) => {
+                      const isHoliday = event.impact === "Holiday";
+                      return (
+                        <li
+                          key={event.id}
+                          className={`grid grid-cols-1 gap-2 px-5 py-3 text-sm transition md:grid-cols-[5.5rem_4.5rem_5.5rem_1fr_5.5rem_5.5rem_5.5rem] md:items-center md:gap-3 ${
+                            isHoliday
+                              ? "border-l-4 border-l-holiday bg-holiday/15 hover:bg-holiday/20"
+                              : "hover:bg-secondary/25"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2 md:contents">
+                            <span className="text-xs font-medium text-muted-foreground">
+                              {formatEventTime(event.timestamp, hydrated)}
+                            </span>
+                            <span className="inline-block w-fit rounded bg-secondary px-2 py-0.5 text-xs font-bold tracking-wider text-foreground">
+                              {event.country}
+                            </span>
+                            <span
+                              className={`inline-block w-fit rounded border px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide ${IMPACT_STYLES[event.impact]}`}
+                            >
+                              {event.impact}
+                            </span>
+                          </div>
+                          <span className={isHoliday ? "font-semibold text-holiday" : "font-medium text-foreground"}>
+                            {event.title}
                           </span>
-                          <span className="inline-block w-fit rounded bg-secondary px-2 py-0.5 text-xs font-bold tracking-wider text-foreground">
-                            {event.country}
-                          </span>
-                          <span
-                            className={`inline-block w-fit rounded border px-2 py-0.5 text-[0.7rem] font-semibold uppercase tracking-wide ${IMPACT_STYLES[event.impact]}`}
-                          >
-                            {event.impact}
-                          </span>
-                        </div>
-                        <span className="font-medium text-foreground">{event.title}</span>
-                        <div className="flex gap-4 text-xs text-muted-foreground md:contents md:text-sm">
-                          <span className="md:text-right">
-                            <span className="md:hidden">Forecast: </span>
-                            <span className="font-medium text-foreground">{event.forecast || "—"}</span>
-                          </span>
-                          <span className="md:text-right">
-                            <span className="md:hidden">Previous: </span>
-                            <span>{event.previous || "—"}</span>
-                          </span>
-                        </div>
-                      </li>
-                    ))}
+                          <div className="flex flex-wrap gap-4 text-xs text-muted-foreground md:contents md:text-sm">
+                            <span className="md:text-right">
+                              <span className="md:hidden">Actual: </span>
+                              <span className="font-semibold text-primary">{event.actual || "—"}</span>
+                            </span>
+                            <span className="md:text-right">
+                              <span className="md:hidden">Forecast: </span>
+                              <span className="font-medium text-foreground">{event.forecast || "—"}</span>
+                            </span>
+                            <span className="md:text-right">
+                              <span className="md:hidden">Previous: </span>
+                              <span>{event.previous || "—"}</span>
+                            </span>
+                          </div>
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               ))}

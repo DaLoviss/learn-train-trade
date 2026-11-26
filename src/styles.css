@@ -53,6 +53,8 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
+  --color-holiday: var(--holiday);
+  --color-holiday-foreground: var(--holiday-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -88,6 +90,8 @@
   --secondary-foreground: oklch(0.96 0.01 300);
   --muted: oklch(0.25 0.07 300);
   --muted-foreground: oklch(0.75 0.04 300);
+  --holiday: oklch(0.84 0.16 195);
+  --holiday-foreground: oklch(0.18 0.06 300);
   --accent: oklch(0.45 0.2 300);
   --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.6 0.22 27);

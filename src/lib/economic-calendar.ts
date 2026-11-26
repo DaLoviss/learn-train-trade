@@ -7,6 +7,7 @@ export type CalendarEvent = {
   date: string;
   timestamp: number;
   impact: ImpactLevel;
+  actual: string;
   forecast: string;
   previous: string;
 };
@@ -42,6 +43,7 @@ export function parseForexFactoryEvents(data: unknown): CalendarEvent[] {
       date,
       timestamp,
       impact,
+      actual: typeof rec["actual"] === "string" ? rec["actual"].trim() : "",
       forecast: typeof rec["forecast"] === "string" ? rec["forecast"].trim() : "",
       previous: typeof rec["previous"] === "string" ? rec["previous"].trim() : "",
     });
@@ -50,14 +52,33 @@ export function parseForexFactoryEvents(data: unknown): CalendarEvent[] {
   return parsed.sort((a, b) => a.timestamp - b.timestamp);
 }
 
+export function getEventDayKey(timestamp: number, useLocalTime: boolean): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    timeZone: useLocalTime ? undefined : "UTC",
+  }).format(new Date(timestamp));
+}
+
+export function getCalendarDays(
+  events: CalendarEvent[],
+  useLocalTime: boolean,
+): { dayKey: string; label: string }[] {
+  return groupEventsByDay(events, useLocalTime).map(({ dayKey, label }) => ({ dayKey, label }));
+}
+
 export function filterCalendarEvents(
   events: CalendarEvent[],
   currency: string,
   impact: string,
+  dayKey = "ALL",
+  useLocalTime = false,
 ): CalendarEvent[] {
   return events.filter((e) => {
     if (currency !== "ALL" && e.country !== currency) return false;
     if (impact !== "ALL" && e.impact !== impact) return false;
+    if (dayKey !== "ALL" && getEventDayKey(e.timestamp, useLocalTime) !== dayKey) return false;
     return true;
   });
 }
@@ -73,17 +94,11 @@ export function groupEventsByDay(
     day: "numeric",
     timeZone,
   });
-  const keyFmt = new Intl.DateTimeFormat("en-CA", {
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-    timeZone,
-  });
 
   const groups = new Map<string, { dayKey: string; label: string; events: CalendarEvent[] }>();
   for (const event of events) {
     const d = new Date(event.timestamp);
-    const dayKey = keyFmt.format(d);
+    const dayKey = getEventDayKey(event.timestamp, useLocalTime);
     const existing = groups.get(dayKey);
     if (existing) {
       existing.events.push(event);
