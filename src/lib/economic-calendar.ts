@@ -12,12 +12,62 @@ export type CalendarEvent = {
   previous: string;
 };
 
-export const FOREX_FACTORY_FEED_URL = "https://nfs.faireconomy.media/ff_calendar_thisweek.json";
-export const FOREX_FACTORY_CALENDAR_URL = "https://www.forexfactory.com/calendar";
+export const FXSTREET_CALENDAR_API_BASE =
+  "https://calendar-api.fxstreet.com/en/api/v1/eventDates";
+export const FXSTREET_CALENDAR_URL = "https://www.fxstreet.com/economic-calendar";
 
-const VALID_IMPACTS = new Set<ImpactLevel>(["High", "Medium", "Low", "Holiday"]);
+const MAJOR_CURRENCIES = new Set([
+  "USD",
+  "EUR",
+  "GBP",
+  "JPY",
+  "AUD",
+  "CAD",
+  "CHF",
+  "NZD",
+  "CNY",
+]);
 
-export function parseForexFactoryEvents(data: unknown): CalendarEvent[] {
+const VOLATILITY_MAP: Record<string, ImpactLevel> = {
+  HIGH: "High",
+  MEDIUM: "Medium",
+  LOW: "Low",
+  NONE: "Holiday",
+};
+
+export function getWeekRangeUtc(now: Date = new Date()): { start: string; end: string } {
+  const utcDay = now.getUTCDay();
+  const daysSinceMonday = (utcDay + 6) % 7;
+  const monday = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - daysSinceMonday),
+  );
+  const sunday = new Date(
+    Date.UTC(monday.getUTCFullYear(), monday.getUTCMonth(), monday.getUTCDate() + 6, 23, 59, 59),
+  );
+  return {
+    start: monday.toISOString().replace(/\.\d{3}Z$/, "Z"),
+    end: sunday.toISOString().replace(/\.\d{3}Z$/, "Z"),
+  };
+}
+
+export function buildFxStreetCalendarUrl(now: Date = new Date()): string {
+  const { start, end } = getWeekRangeUtc(now);
+  return `${FXSTREET_CALENDAR_API_BASE}/${start}/${end}`;
+}
+
+function formatMetric(value: unknown, unit: unknown, potency: unknown): string {
+  if (typeof value !== "number" || Number.isNaN(value)) return "";
+  const suffix =
+    typeof potency === "string" && potency.trim() !== "" && potency !== "ZERO"
+      ? potency.trim()
+      : "";
+  const unitStr = typeof unit === "string" ? unit.trim() : "";
+  if (unitStr === "%") return `${value}${suffix}%`;
+  if (unitStr) return `${unitStr}${value}${suffix}`;
+  return `${value}${suffix}`;
+}
+
+export function parseFxStreetEvents(data: unknown): CalendarEvent[] {
   if (!Array.isArray(data)) return [];
   const parsed: CalendarEvent[] = [];
 
@@ -25,27 +75,31 @@ export function parseForexFactoryEvents(data: unknown): CalendarEvent[] {
     const raw = data[i];
     if (!raw || typeof raw !== "object") continue;
     const rec = raw as Record<string, unknown>;
-    const title = typeof rec["title"] === "string" ? rec["title"].trim() : "";
-    const country = typeof rec["country"] === "string" ? rec["country"].trim().toUpperCase() : "";
-    const date = typeof rec["date"] === "string" ? rec["date"].trim() : "";
-    const impactRaw = typeof rec["impact"] === "string" ? rec["impact"].trim() : "";
+    const title = typeof rec["name"] === "string" ? rec["name"].trim() : "";
+    const country =
+      typeof rec["currencyCode"] === "string" ? rec["currencyCode"].trim().toUpperCase() : "";
+    const date = typeof rec["dateUtc"] === "string" ? rec["dateUtc"].trim() : "";
+    const volatility =
+      typeof rec["volatility"] === "string" ? rec["volatility"].trim().toUpperCase() : "";
     const timestamp = Date.parse(date);
 
-    if (!title || !country || Number.isNaN(timestamp)) continue;
-    const impact: ImpactLevel = VALID_IMPACTS.has(impactRaw as ImpactLevel)
-      ? (impactRaw as ImpactLevel)
-      : "Low";
+    if (!title || !country || !MAJOR_CURRENCIES.has(country) || Number.isNaN(timestamp)) continue;
+    const impact: ImpactLevel = VOLATILITY_MAP[volatility] ?? "Low";
+    const id =
+      typeof rec["id"] === "string" && rec["id"].trim()
+        ? rec["id"].trim()
+        : `${timestamp}-${country}-${i}`;
 
     parsed.push({
-      id: `${timestamp}-${country}-${i}`,
+      id,
       title,
       country,
       date,
       timestamp,
       impact,
-      actual: typeof rec["actual"] === "string" ? rec["actual"].trim() : "",
-      forecast: typeof rec["forecast"] === "string" ? rec["forecast"].trim() : "",
-      previous: typeof rec["previous"] === "string" ? rec["previous"].trim() : "",
+      actual: formatMetric(rec["actual"], rec["unit"], rec["potency"]),
+      forecast: formatMetric(rec["consensus"], rec["unit"], rec["potency"]),
+      previous: formatMetric(rec["previous"], rec["unit"], rec["potency"]),
     });
   }
 

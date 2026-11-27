@@ -3,18 +3,18 @@ import { createFileRoute, Link, useHydrated } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { PageHero, meta } from "@/components/site-layout";
 import {
-  FOREX_FACTORY_CALENDAR_URL,
+  FXSTREET_CALENDAR_URL,
   filterCalendarEvents,
   formatEventTime,
   getCalendarDays,
   groupEventsByDay,
   type ImpactLevel,
 } from "@/lib/economic-calendar";
-import { getForexFactoryCalendar } from "@/lib/economic-calendar.functions";
+import { getEconomicCalendar } from "@/lib/economic-calendar.functions";
 
 const calendarQueryOptions = queryOptions({
-  queryKey: ["forex-factory-calendar"],
-  queryFn: () => getForexFactoryCalendar(),
+  queryKey: ["fxstreet-economic-calendar"],
+  queryFn: () => getEconomicCalendar(),
   staleTime: 5 * 60 * 1000,
 });
 
@@ -22,7 +22,7 @@ export const Route = createFileRoute("/resources/economic-calendar")({
   head: () =>
     meta(
       "Economic Calendar",
-      "Follow this week's economic releases, forecasts and high-impact events powered by ForexFactory.",
+      "Follow this week's economic releases, actual figures, forecasts and high-impact events powered by FXStreet.",
     ),
   loader: ({ context }) => context.queryClient.ensureQueryData(calendarQueryOptions),
   component: EconomicCalendarPage,
@@ -74,12 +74,12 @@ function EconomicCalendarPage() {
             ← Resources
           </Link>
           <a
-            href={FOREX_FACTORY_CALENDAR_URL}
+            href={FXSTREET_CALENDAR_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="font-semibold text-primary hover:underline"
           >
-            Open on ForexFactory ↗
+            Open on FXStreet ↗
           </a>
         </div>
 
@@ -169,12 +169,12 @@ function EconomicCalendarPage() {
             <div className="px-6 py-12 text-center">
               <p className="text-sm text-muted-foreground">{data.error}</p>
               <a
-                href={FOREX_FACTORY_CALENDAR_URL}
+                href={FXSTREET_CALENDAR_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="mt-4 inline-block text-sm font-semibold text-primary hover:underline"
               >
-                View live calendar on ForexFactory ↗
+                View live calendar on FXStreet ↗
               </a>
             </div>
           ) : dayGroups.length === 0 ? (
@@ -252,12 +252,12 @@ function EconomicCalendarPage() {
         <p className="mt-3 text-xs text-muted-foreground">
           Weekly Economic Calendar data provided by{" "}
           <a
-            href={FOREX_FACTORY_CALENDAR_URL}
+            href={FXSTREET_CALENDAR_URL}
             target="_blank"
             rel="nofollow noopener noreferrer"
             className="font-semibold text-primary hover:underline"
           >
-            ForexFactory
+            FXStreet
           </a>
           .
         </p>

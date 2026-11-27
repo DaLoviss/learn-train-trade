@@ -2,50 +2,62 @@ import { describe, expect, it } from "vitest";
 import {
   filterCalendarEvents,
   getCalendarDays,
-  parseForexFactoryEvents,
+  getWeekRangeUtc,
+  parseFxStreetEvents,
 } from "@/lib/economic-calendar";
 
-describe("ForexFactory economic calendar feed", () => {
-  it("parses valid events, skips malformed rows, and sorts chronologically", () => {
-    const events = parseForexFactoryEvents([
+describe("FXStreet economic calendar feed", () => {
+  it("parses valid major-currency events with actual, forecast, and previous values", () => {
+    const events = parseFxStreetEvents([
       {
-        title: "Prelim GDP q/q",
-        country: "usd",
-        date: "2026-11-25T08:30:00-05:00",
-        impact: "High",
-        actual: "3.6%",
-        forecast: "3.5%",
-        previous: "3.4%",
+        id: "evt-2",
+        name: "Prelim GDP q/q",
+        currencyCode: "usd",
+        dateUtc: "2026-11-25T13:30:00Z",
+        volatility: "HIGH",
+        actual: 3.6,
+        consensus: 3.5,
+        previous: 3.4,
+        unit: "%",
+        potency: "ZERO",
       },
       {
-        title: "",
-        country: "EUR",
-        date: "2026-11-24T04:00:00-05:00",
-        impact: "Low",
+        id: "evt-minor",
+        name: "Local Release",
+        currencyCode: "ARS",
+        dateUtc: "2026-11-24T09:00:00Z",
+        volatility: "LOW",
+        actual: 1.2,
       },
       {
-        title: "CPI y/y",
-        country: "AUD",
-        date: "2026-11-24T19:30:00-05:00",
-        impact: "High",
-        forecast: "4.7%",
-        previous: "4.3%",
+        id: "evt-1",
+        name: "Nonfarm Payrolls",
+        currencyCode: "AUD",
+        dateUtc: "2026-11-24T00:30:00Z",
+        volatility: "HIGH",
+        actual: null,
+        consensus: 25,
+        previous: 18,
+        unit: null,
+        potency: "K",
       },
     ]);
 
     expect(events).toHaveLength(2);
-    expect(events[0]?.title).toBe("CPI y/y");
+    expect(events[0]?.title).toBe("Nonfarm Payrolls");
     expect(events[0]?.actual).toBe("");
+    expect(events[0]?.forecast).toBe("25K");
     expect(events[1]?.country).toBe("USD");
     expect(events[1]?.actual).toBe("3.6%");
     expect(events[1]?.forecast).toBe("3.5%");
+    expect(events[1]?.previous).toBe("3.4%");
   });
 
   it("filters events by currency and impact level", () => {
-    const events = parseForexFactoryEvents([
-      { title: "Core PCE", country: "USD", date: "2026-11-25T08:30:00-05:00", impact: "High", forecast: "0.3%", previous: "0.3%" },
-      { title: "Beige Book", country: "USD", date: "2026-11-25T14:00:00-05:00", impact: "Low", forecast: "", previous: "" },
-      { title: "Tokyo Core CPI", country: "JPY", date: "2026-11-26T18:30:00-05:00", impact: "Medium", forecast: "3.0%", previous: "2.6%" },
+    const events = parseFxStreetEvents([
+      { name: "Core PCE", currencyCode: "USD", dateUtc: "2026-11-25T13:30:00Z", volatility: "HIGH", actual: 0.3, consensus: 0.3, previous: 0.3, unit: "%" },
+      { name: "Beige Book", currencyCode: "USD", dateUtc: "2026-11-25T19:00:00Z", volatility: "LOW" },
+      { name: "Tokyo Core CPI", currencyCode: "JPY", dateUtc: "2026-11-26T23:30:00Z", volatility: "MEDIUM", consensus: 3.0, previous: 2.6, unit: "%" },
     ]);
 
     expect(filterCalendarEvents(events, "USD", "High")).toHaveLength(1);
@@ -53,16 +65,24 @@ describe("ForexFactory economic calendar feed", () => {
     expect(filterCalendarEvents(events, "ALL", "Medium")[0]?.country).toBe("JPY");
   });
 
-  it("filters events by date and lists unique calendar days", () => {
-    const events = parseForexFactoryEvents([
-      { title: "Bank Holiday", country: "USD", date: "2026-11-26T00:00:00Z", impact: "Holiday" },
-      { title: "Core PCE", country: "USD", date: "2026-11-25T13:30:00Z", impact: "High", actual: "0.3%", forecast: "0.3%" },
-      { title: "GDP q/q", country: "CAD", date: "2026-11-26T13:30:00Z", impact: "High", forecast: "0.2%" },
+  it("maps NONE volatility to Holiday and filters by date", () => {
+    const events = parseFxStreetEvents([
+      { name: "Thanksgiving Day", currencyCode: "USD", dateUtc: "2026-11-26T05:00:00Z", volatility: "NONE" },
+      { name: "Core PCE", currencyCode: "USD", dateUtc: "2026-11-25T13:30:00Z", volatility: "HIGH", actual: 0.3, consensus: 0.3, unit: "%" },
+      { name: "GDP q/q", currencyCode: "CAD", dateUtc: "2026-11-26T13:30:00Z", volatility: "HIGH", consensus: 0.2, unit: "%" },
     ]);
 
     const days = getCalendarDays(events, false);
     expect(days.map((d) => d.dayKey)).toEqual(["2026-11-25", "2026-11-26"]);
     expect(filterCalendarEvents(events, "ALL", "ALL", "2026-11-26", false)).toHaveLength(2);
-    expect(filterCalendarEvents(events, "USD", "Holiday", "2026-11-26", false)[0]?.title).toBe("Bank Holiday");
+    expect(filterCalendarEvents(events, "USD", "Holiday", "2026-11-26", false)[0]?.title).toBe("Thanksgiving Day");
+  });
+
+  it("computes the Monday-to-Sunday UTC week range", () => {
+    const range = getWeekRangeUtc(new Date("2026-11-27T06:00:00Z"));
+    expect(range).toEqual({
+      start: "2026-11-23T00:00:00Z",
+      end: "2026-11-29T23:59:59Z",
+    });
   });
 });
