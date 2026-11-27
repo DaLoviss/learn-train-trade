@@ -34,3 +34,4 @@ use the editor.
 - Render Investing.com public RSS news through RSS2JSON with validated provider links and a rolling publication-time cutoff; filter at display time even after failed refreshes to keep expired articles out.
 - Keep the Instruments page's sessions and instrument lists (currency pairs, metals, stock indices) in `src/lib/instruments.ts` so tests can assert them; the route file only renders them.
 - Keep the Instruments schedule's selectable day ranges (today, tomorrow, rest of this week, this week) in `src/lib/trading-schedule.ts` so tests can assert which day columns appear; the component only renders them.
+- Build the Instruments page's official CME Group trading hours link from the visitor's current calendar day via `officialTradingHoursUrl()` in `src/lib/trading-schedule.ts`, so it always opens on today instead of a fixed date.

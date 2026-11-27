@@ -3,15 +3,22 @@ import { useEffect, useState } from "react";
 import { PageHero, meta } from "@/components/site-layout";
 import { TradingSchedule } from "@/components/trading-schedule";
 import { GROUPS, SESSIONS, formatLocalWindow, formatUtcHour } from "@/lib/instruments";
-import { OFFICIAL_TRADING_HOURS_URL } from "@/lib/trading-schedule";
+import { getDateKeyInTimeZone, officialTradingHoursUrl } from "@/lib/trading-schedule";
 
 function InstrumentsPage() {
   const [tzInfo, setTzInfo] = useState<{ offset: number; label: string } | null>(null);
+  const [todayKey, setTodayKey] = useState("");
 
   useEffect(() => {
-    const now = new Date();
-    const label = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local time";
-    setTzInfo({ offset: now.getTimezoneOffset(), label });
+    const update = () => {
+      const now = new Date();
+      const label = Intl.DateTimeFormat().resolvedOptions().timeZone || "Local time";
+      setTzInfo({ offset: now.getTimezoneOffset(), label });
+      setTodayKey(getDateKeyInTimeZone(now, label));
+    };
+    update();
+    const timer = window.setInterval(update, 60000);
+    return () => window.clearInterval(timer);
   }, []);
 
   return (
@@ -92,7 +99,7 @@ function InstrumentsPage() {
               </p>
             </div>
             <a
-              href={OFFICIAL_TRADING_HOURS_URL}
+              href={officialTradingHoursUrl(todayKey)}
               target="_blank"
               rel="noreferrer"
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"

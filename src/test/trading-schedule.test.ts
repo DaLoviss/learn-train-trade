@@ -2,19 +2,30 @@ import { describe, expect, it } from "vitest";
 
 import { GROUPS } from "@/lib/instruments";
 import {
-  OFFICIAL_TRADING_HOURS_URL,
   addDaysToDateKey,
   dayRangeKeys,
   formatScheduleWindows,
+  getDateKeyInTimeZone,
   getDaySchedule,
+  officialTradingHoursUrl,
   startOfWeekDateKey,
 } from "@/lib/trading-schedule";
 
 describe("instrument trading schedule", () => {
-  it("links to the official CME Group trading hours page for the chosen date", () => {
-    expect(OFFICIAL_TRADING_HOURS_URL).toBe(
+  it("points the CME Group link at the date it is given", () => {
+    expect(officialTradingHoursUrl("2026-11-26")).toBe(
       "https://www.cmegroup.com/trading-hours.html#tradeDate=2026-11-26",
     );
+  });
+
+  it("leaves the date off the CME Group link until today is known", () => {
+    expect(officialTradingHoursUrl("")).toBe("https://www.cmegroup.com/trading-hours.html");
+  });
+
+  it("uses the visitor's own calendar day for the CME Group link", () => {
+    const dateKey = getDateKeyInTimeZone(new Date("2026-11-27T06:37:00Z"), "America/New_York");
+    expect(dateKey).toBe("2026-11-27");
+    expect(officialTradingHoursUrl(dateKey)).toContain("#tradeDate=2026-11-27");
   });
 
   it("flags Thanksgiving 2026 as an early close for US indices", () => {
