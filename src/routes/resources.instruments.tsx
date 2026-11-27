@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { PageHero, meta } from "@/components/site-layout";
 import { TradingSchedule } from "@/components/trading-schedule";
 import { GROUPS, SESSIONS, formatLocalWindow, formatUtcHour } from "@/lib/instruments";
+import { OFFICIAL_TRADING_HOURS_URL } from "@/lib/trading-schedule";
 
 function InstrumentsPage() {
   const [tzInfo, setTzInfo] = useState<{ offset: number; label: string } | null>(null);
@@ -76,6 +77,31 @@ function InstrumentsPage() {
           </section>
         ))}
       </div>
+
+      <section className="mx-auto mt-16 max-w-6xl px-4 pb-6" aria-labelledby="official-hours-title">
+        <div className="rounded-xl border border-primary/30 bg-card p-6 sm:p-8">
+          <div className="flex flex-wrap items-center justify-between gap-5">
+            <div className="max-w-2xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">Official market hours</p>
+              <h2 id="official-hours-title" className="mt-2 text-xl font-bold text-gold sm:text-2xl">
+                See the full CME Group trading hours
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+                For the complete and most up to date schedule, including holiday closures and early closes, open the
+                official CME Group trading hours page.
+              </p>
+            </div>
+            <a
+              href={OFFICIAL_TRADING_HOURS_URL}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-bold text-primary-foreground transition-opacity hover:opacity-90"
+            >
+              Visit CME Group trading hours ↗
+            </a>
+          </div>
+        </div>
+      </section>
     </>
   );
 }

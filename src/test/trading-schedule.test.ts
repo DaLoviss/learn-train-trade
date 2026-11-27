@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { GROUPS } from "@/lib/instruments";
 import {
+  OFFICIAL_TRADING_HOURS_URL,
   addDaysToDateKey,
   dayRangeKeys,
   formatScheduleWindows,
@@ -10,6 +11,12 @@ import {
 } from "@/lib/trading-schedule";
 
 describe("instrument trading schedule", () => {
+  it("links to the official CME Group trading hours page for the chosen date", () => {
+    expect(OFFICIAL_TRADING_HOURS_URL).toBe(
+      "https://www.cmegroup.com/trading-hours.html#tradeDate=2026-11-26",
+    );
+  });
+
   it("flags Thanksgiving 2026 as an early close for US indices", () => {
     const schedule = getDaySchedule("US500", "Stock Indices", "2026-11-26");
     expect(schedule.status).toBe("early-close");

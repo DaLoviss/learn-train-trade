@@ -27,6 +27,8 @@ type ScheduleSpec = {
 };
 
 export const HOLIDAY_HOURS_SOURCE = "https://www.cmegroup.com/trading-hours.html";
+export const OFFICIAL_TRADING_HOURS_URL =
+  "https://www.cmegroup.com/trading-hours.html#tradeDate=2026-11-26";
 
 const FULL_DAY: MarketWindow[] = [{ open: 0, close: 1440 }];
 const CME_WEEKDAY: MarketWindow[] = [
